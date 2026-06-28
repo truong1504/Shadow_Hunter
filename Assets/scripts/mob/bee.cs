@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class bee : MonoBehaviour
@@ -14,6 +15,10 @@ public class bee : MonoBehaviour
 
     [Header("Respawn")]
     public float respawnTime = 20f;
+
+    [Header("UI")]
+    [Tooltip("Kéo Slider (trong Canvas World Space đặt trên đầu Bee) vào đây")]
+    public Slider hpSlider;
 
     private int currentHP;
 
@@ -35,6 +40,12 @@ public class bee : MonoBehaviour
 
         spawnPoint = transform.position;
         currentHP = maxHP;
+
+        if (hpSlider != null)
+        {
+            hpSlider.maxValue = maxHP;
+            hpSlider.value = currentHP;
+        }
 
         ChooseTarget();
     }
@@ -82,6 +93,10 @@ public class bee : MonoBehaviour
             return;
 
         currentHP -= damage;
+        currentHP = Mathf.Max(currentHP, 0);
+
+        if (hpSlider != null)
+            hpSlider.value = currentHP;
 
         anim.SetTrigger("Hit");
 
@@ -95,6 +110,9 @@ public class bee : MonoBehaviour
     {
         isDead = true;
 
+        if (hpSlider != null)
+            hpSlider.gameObject.SetActive(false);
+
         yield return new WaitForSeconds(0.4f);
 
         gameObject.SetActive(false);
@@ -104,6 +122,12 @@ public class bee : MonoBehaviour
         transform.position = spawnPoint;
 
         currentHP = maxHP;
+
+        if (hpSlider != null)
+        {
+            hpSlider.value = currentHP;
+            hpSlider.gameObject.SetActive(true);
+        }
 
         gameObject.SetActive(true);
 

@@ -20,6 +20,8 @@ public class boar_hp : MonoBehaviour
     // Lưu vị trí sinh ra
     private Vector3 spawnPosition;
 
+    private Rigidbody2D rb;
+
     void Start()
     {
         // Lưu vị trí ban đầu
@@ -28,9 +30,18 @@ public class boar_hp : MonoBehaviour
         // Ban đầu HP = Max HP
         currentHP = maxHP;
 
-        // Cập nhật thanh máu
-        hpSlider.maxValue = maxHP;
-        hpSlider.value = currentHP;
+        rb = GetComponent<Rigidbody2D>();
+
+        // Cập nhật thanh máu (chỉ khi đã gán Slider)
+        if (hpSlider != null)
+        {
+            hpSlider.maxValue = maxHP;
+            hpSlider.value = currentHP;
+        }
+        else
+        {
+            Debug.LogWarning("[boar_hp] Chưa gán Hp Slider trong Inspector cho " + gameObject.name);
+        }
     }
 
     //----------------------------------------------------
@@ -44,7 +55,8 @@ public class boar_hp : MonoBehaviour
 
         currentHP -= damage;
 
-        hpSlider.value = currentHP;
+        if (hpSlider != null)
+            hpSlider.value = currentHP;
 
         if (currentHP <= 0)
         {
@@ -68,8 +80,17 @@ public class boar_hp : MonoBehaviour
         // Tắt script di chuyển
         GetComponent<boar_run>().enabled = false;
 
-        // Ẩn thanh máu
-        hpSlider.gameObject.SetActive(false);
+        // Tắt Rigidbody2D để không bị rơi do trọng lực
+        // khi mất Collider (nguyên nhân thanh máu bị "rơi xuống")
+        if (rb != null)
+        {
+            rb.simulated = false;
+        }
+
+        // Ẩn hẳn Canvas (HP bar), không chỉ ẩn Slider riêng,
+        // để toàn bộ thanh máu biến mất theo boar
+        if (hpSlider != null)
+            hpSlider.transform.root.gameObject.SetActive(false);
 
         // Coroutine
         // Chờ 15 giây rồi hồi sinh
@@ -91,15 +112,23 @@ public class boar_hp : MonoBehaviour
 
         currentHP = maxHP;
 
-        hpSlider.value = currentHP;
-
-        hpSlider.gameObject.SetActive(true);
+        if (hpSlider != null)
+        {
+            hpSlider.value = currentHP;
+            hpSlider.transform.root.gameObject.SetActive(true);
+        }
 
         GetComponent<SpriteRenderer>().enabled = true;
 
         GetComponent<Collider2D>().enabled = true;
 
         GetComponent<boar_run>().enabled = true;
+
+        // Bật lại Rigidbody2D khi hồi sinh
+        if (rb != null)
+        {
+            rb.simulated = true;
+        }
 
         isDead = false;
     }

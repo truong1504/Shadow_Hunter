@@ -3,6 +3,13 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    [Header("Attack")]
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private float attackRadius = 0.8f;
+    [SerializeField] private LayerMask enemyLayer;
+    [SerializeField] private int attackDamage = 50;
+    [SerializeField] private float attackTime = 0.5f;
+
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 12f;
@@ -36,26 +43,129 @@ public class Player : MonoBehaviour
     private float ignoreGroundTimer; // chặn false-positive ground check ngay lúc vừa nhảy
     private float animLockTimer;     // khóa animation Jump trong 1 khoảng thời gian cố định
 
-    private void HandleAttack()
-    {
-        if (Keyboard.current.xKey.wasPressedThisFrame)
-        {
-            anim.SetTrigger("Attack");
-
-            Debug.Log("Attack");
-        }
-    }
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
 
+        if (rb == null)
+            Debug.LogError("[Player] Thiếu component Rigidbody2D trên GameObject Player!");
+
+        if (sr == null)
+            Debug.LogError("[Player] Thiếu component SpriteRenderer trên GameObject Player!");
+
+        if (anim == null)
+            Debug.LogError("[Player] Thiếu component Animator trên GameObject Player!");
+
+        if (attackPoint == null)
+            Debug.LogError("[Player] Chưa gán AttackPoint trong Inspector!");
+
         if (groundLayer.value == 0)
             Debug.LogWarning("[Player] Ground Layer đang để trống (Nothing). " +
                 "Sẽ KHÔNG BAO GIỜ phát hiện mặt đất.");
     }
 
+    private Transform FindNearestEnemy()
+    {
+        Collider2D[] enemies = Physics2D.OverlapCircleAll(
+            transform.position,
+            attackRadius,
+            enemyLayer);
+
+        if (enemies.Length == 0)
+            return null;
+
+        Transform nearest = enemies[0].transform;
+        float minDistance = Vector2.Distance(
+            transform.position,
+            nearest.position);
+
+        foreach (Collider2D enemy in enemies)
+        {
+            float distance = Vector2.Distance(
+                transform.position,
+                enemy.transform.position);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearest = enemy.transform;
+            }
+        }
+
+        return nearest;
+    }
+    private void HandleAttack()
+    {
+        if (isAttacking)
+            return;
+
+        if (Keyboard.current.xKey.wasPressedThisFrame)
+        {
+            Transform enemy = FindNearestEnemy();
+
+            // Có quái trong phạm vi -> quay mặt về quái
+            if (enemy != null)
+            {
+                if (enemy.position.x > transform.position.x)
+                    sr.flipX = false;
+                else
+                    sr.flipX = true;
+            }
+
+            // Cập nhật AttackPoint theo hướng nhân vật
+            Vector3 pos = attackPoint.localPosition;
+
+            if (sr.flipX)
+                pos.x = -Mathf.Abs(pos.x);
+            else
+                pos.x = Mathf.Abs(pos.x);
+
+            attackPoint.localPosition = pos;
+
+            isAttacking = true;
+
+            moveInput = 0;
+
+            anim.SetTrigger("Attack");
+
+            Invoke(nameof(DealDamage), 0.15f);
+
+            Invoke(nameof(FinishAttack), attackTime);
+        }
+    }
+
+    private void DealDamage()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            attackPoint.position,
+            attackRadius,
+            enemyLayer);
+
+        foreach (Collider2D enemy in hits)
+        {
+            bee bee = enemy.GetComponent<bee>();
+
+            if (bee != null)
+            {
+                bee.TakeDamage(attackDamage);
+                continue;
+            }
+
+            boar_hp boar = enemy.GetComponent<boar_hp>();
+
+            if (boar != null)
+            {
+                boar.TakeDamage(attackDamage);
+            }
+        }
+    }
+
+    private void FinishAttack()
+    {
+        isAttacking = false;
+    }
     private void Update()
     {
         UpdateIgnoreGroundTimer();
@@ -157,10 +267,21 @@ public class Player : MonoBehaviour
             sr.flipX = false;
         else if (moveInput < 0)
             sr.flipX = true;
-    }
+        Vector3 pos = attackPoint.localPosition;
+
+        if (sr.flipX)
+            pos.x = -Mathf.Abs(pos.x);
+        else
+            pos.x = Mathf.Abs(pos.x);
+
+        attackPoint.localPosition = pos;
+        }
 
     private void HandleJump()
     {
+        if (isAttacking)
+            return;
+
         bool jumpPressed =
             Keyboard.current.spaceKey.wasPressedThisFrame ||
             Keyboard.current.upArrowKey.wasPressedThisFrame;
