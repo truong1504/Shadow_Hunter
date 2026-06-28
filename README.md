@@ -50,6 +50,14 @@ Shadow Hunter is a pixel-art action RPG where players fight monsters and defeat 
 
 ---
 
+## ▶ Play Now
+
+ **Play on itch.io**
+
+https://truong1504.itch.io/hunter
+
+---
+
 ## 🛠 Built With
 
 - Unity 6
