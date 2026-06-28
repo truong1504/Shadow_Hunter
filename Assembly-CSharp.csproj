@@ -53,6 +53,8 @@
     <Compile Include="Assets\scripts\player\player.cs" />
     <Compile Include="Assets\scripts\player\camera.cs" />
     <Compile Include="Assets\scripts\mob\boar_hp.cs" />
+    <Compile Include="Assets\scripts\mob\bee.cs" />
+    <Compile Include="Assets\scripts\player\PlayerHealth.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

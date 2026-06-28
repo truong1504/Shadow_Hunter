@@ -63,7 +63,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 64
+  spritePixelsToUnits: 30
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -128,10 +128,10 @@ TextureImporter:
       name: Tree-Assets_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 322
-        width: 79
-        height: 72
+        x: 232
+        y: 352
+        width: 80
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -234,6 +234,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Tree-Assets_5
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 367
+        width: 65
+        height: 33
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ef8f2cd1512a59f47873c3b31ca637b7
+      internalID: 1584230097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -253,6 +275,7 @@ TextureImporter:
       Tree-Assets_2: 8200937935140575401
       Tree-Assets_3: -2167415779893708840
       Tree-Assets_4: -1206494012597054622
+      Tree-Assets_5: 1584230097
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
