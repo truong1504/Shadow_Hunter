@@ -13,6 +13,14 @@ public class bee : MonoBehaviour
     public float patrolRadius = 4f;
     public float changeDirectionTime = 2f;
 
+    [Header("Combat")]
+    [Tooltip("Khoảng cách phát hiện Player để tấn công")]
+    public float attackRange = 3f;
+    [Tooltip("Thời gian hồi chiêu giữa các lần tấn công")]
+    public float attackCooldown = 1.5f;
+    [Tooltip("Khoảng cách dừng lại trước khi tấn công")]
+    public float stopDistance = 1.5f;
+
     [Header("Respawn")]
     public float respawnTime = 20f;
 
@@ -31,6 +39,12 @@ public class bee : MonoBehaviour
 
     private float timer;
     private bool isDead;
+    private bool isAttacking;
+    private float attackTimer;
+
+    // Biến để theo dõi Player
+    private Transform player;
+    private bool isChasingPlayer;
 
     private void Start()
     {
@@ -47,6 +61,11 @@ public class bee : MonoBehaviour
             hpSlider.value = currentHP;
         }
 
+        // Tìm Player
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+            player = playerObj.transform;
+
         ChooseTarget();
     }
 
@@ -55,6 +74,86 @@ public class bee : MonoBehaviour
         if (isDead)
             return;
 
+        // Kiểm tra cooldown tấn công
+        if (attackTimer > 0f)
+            attackTimer -= Time.deltaTime;
+
+        // Kiểm tra Player trong phạm vi
+        CheckForPlayer();
+
+        // Di chuyển hoặc tuần tra
+        if (isChasingPlayer && player != null)
+        {
+            ChasePlayer();
+        }
+        else
+        {
+            Patrol();
+        }
+    }
+
+    private void CheckForPlayer()
+    {
+        if (player == null)
+        {
+            isChasingPlayer = false;
+            return;
+        }
+
+        float distance = Vector2.Distance(transform.position, player.position);
+
+        // Nếu Player trong phạm vi tấn công
+        if (distance <= attackRange)
+        {
+            isChasingPlayer = true;
+
+            // Tấn công nếu đã hết cooldown và không đang tấn công
+            if (attackTimer <= 0f && !isAttacking)
+            {
+                StartCoroutine(PerformAttack());
+            }
+        }
+        else
+        {
+            isChasingPlayer = false;
+        }
+    }
+
+    private void ChasePlayer()
+    {
+        if (player == null)
+            return;
+
+        float distance = Vector2.Distance(transform.position, player.position);
+
+        // Nếu Player ở xa hơn stopDistance thì di chuyển đến
+        if (distance > stopDistance)
+        {
+            Vector3 direction = (player.position - transform.position).normalized;
+            transform.position = Vector2.MoveTowards(
+                transform.position,
+                player.position,
+                moveSpeed * Time.deltaTime);
+
+            // Quay mặt về hướng Player
+            if (player.position.x > transform.position.x)
+                sr.flipX = false;
+            else
+                sr.flipX = true;
+        }
+        else
+        {
+            // Đứng yên khi đã đến gần Player
+            // Quay mặt về hướng Player
+            if (player.position.x > transform.position.x)
+                sr.flipX = false;
+            else
+                sr.flipX = true;
+        }
+    }
+
+    private void Patrol()
+    {
         timer += Time.deltaTime;
 
         if (timer >= changeDirectionTime)
@@ -109,16 +208,26 @@ public class bee : MonoBehaviour
     IEnumerator Die()
     {
         isDead = true;
+        isChasingPlayer = false;
+        isAttacking = false;
 
         if (hpSlider != null)
             hpSlider.gameObject.SetActive(false);
+
+        // Tắt Collider để không va chạm khi chết
+        if (col != null)
+            col.enabled = false;
 
         yield return new WaitForSeconds(0.4f);
 
         gameObject.SetActive(false);
 
+        Debug.Log($"Bee sẽ hồi sinh sau {respawnTime} giây");
+
+        // Chờ hồi sinh
         yield return new WaitForSeconds(respawnTime);
 
+        // Hồi sinh
         transform.position = spawnPoint;
 
         currentHP = maxHP;
@@ -129,36 +238,73 @@ public class bee : MonoBehaviour
             hpSlider.gameObject.SetActive(true);
         }
 
+        // Bật lại Collider
+        if (col != null)
+            col.enabled = true;
+
         gameObject.SetActive(true);
 
         isDead = false;
+        isAttacking = false;
+        attackTimer = 0f;
+
+        // Reset animation
+        if (anim != null)
+            anim.Rebind();
 
         ChooseTarget();
+
+        Debug.Log("Bee đã hồi sinh!");
     }
 
-    public void Attack()
+    IEnumerator PerformAttack()
     {
-        if (isDead)
-            return;
+        if (isAttacking || isDead)
+            yield break;
 
-        anim.SetTrigger("Attack");
+        isAttacking = true;
+        attackTimer = attackCooldown;
+
+        // Phát animation tấn công
+        if (anim != null)
+        {
+            anim.SetTrigger("Attack");
+        }
+
+        // Đợi animation tấn công (thời gian animation)
+        yield return new WaitForSeconds(0.3f);
+
+        // Gây sát thương nếu Player vẫn trong phạm vi
+        if (player != null && !isDead)
+        {
+            float distance = Vector2.Distance(transform.position, player.position);
+            if (distance <= attackRange)
+            {
+                PlayerHealth hp = player.GetComponent<PlayerHealth>();
+                if (hp != null)
+                {
+                    hp.TakeDamage(damage);
+                    Debug.Log($"Bee tấn công Player, gây {damage} sát thương!");
+                }
+            }
+        }
+
+        isAttacking = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isDead)
-            return;
+        // Không dùng Trigger nữa, thay bằng CheckForPlayer trong Update
+        // Giữ lại để tương thích nếu cần
+    }
 
-        if (other.CompareTag("Player"))
-        {
-            Attack();
-
-            PlayerHealth hp = other.GetComponent<PlayerHealth>();
-
-            if (hp != null)
-            {
-                hp.TakeDamage(damage);
-            }
-        }
+    // Vẽ phạm vi tấn công trong Scene view
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, stopDistance);
     }
 }

@@ -305,6 +305,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   maxHP: 100
   hpSlider: {fileID: 5238792375032323197, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+  hpCanvas: {fileID: 1198015386762467797}
 --- !u!114 &281112368837749187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,7 +356,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_AnchorMin.x
@@ -371,7 +372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 40
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_LocalPosition.x
@@ -407,7 +408,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 172
+      value: 162
       objectReference: {fileID: 0}
     - target: {fileID: 1246717930480452692, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -421,9 +422,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2201208340058188620, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+      propertyPath: m_Color.b
+      value: 0.049020927
+      objectReference: {fileID: 0}
+    - target: {fileID: 2201208340058188620, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+      propertyPath: m_Color.g
+      value: 0.14612904
+      objectReference: {fileID: 0}
+    - target: {fileID: 2201208340058188620, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+      propertyPath: m_Color.r
+      value: 0.9622642
+      objectReference: {fileID: 0}
     - target: {fileID: 2309119641905157606, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_Name
       value: Slider
+      objectReference: {fileID: 0}
+    - target: {fileID: 2309119641905157606, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4485341867811235657, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_AnchorMax.x
@@ -431,6 +448,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4485341867811235657, guid: 8ffd7952247941042b69669d420280ba, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5238792375032323197, guid: 8ffd7952247941042b69669d420280ba, type: 3}
+      propertyPath: m_Value
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5238792375032323197, guid: 8ffd7952247941042b69669d420280ba, type: 3}

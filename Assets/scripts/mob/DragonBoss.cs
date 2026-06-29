@@ -34,17 +34,27 @@ public class DragonBoss : MonoBehaviour
     [Tooltip("Thời gian (giây) animation Death chạy xong trước khi ẩn Boss")]
     [SerializeField] private float deathDelay = 1.5f;
 
+    [Header("Flip Settings")]
+    [Tooltip("Tick nếu sprite đang quay mặt phải, bỏ tick nếu quay mặt trái")]
+    [SerializeField] private bool isFacingRight = true;
+    [Tooltip("Tick để đảo ngược hướng (dùng khi animation bị ngược)")]
+    [SerializeField] private bool invertFlip = false;
+
     private Animator anim;
     private Collider2D col;
+    private SpriteRenderer spriteRenderer;
 
     private Transform player;
     private bool isAttacking;
     private float cooldownTimer;
 
+    private bool currentFacingRight = true;
+
     private void Awake()
     {
         anim = GetComponent<Animator>();
         col = GetComponent<Collider2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         if (anim == null)
             Debug.LogError("[DragonBoss] Thiếu component Animator!");
@@ -52,6 +62,8 @@ public class DragonBoss : MonoBehaviour
         if (playerLayer.value == 0)
             Debug.LogWarning("[DragonBoss] Player Layer đang để trống (Nothing). " +
                 "Sẽ không phát hiện được Player.");
+
+        currentFacingRight = isFacingRight;
     }
 
     private void Start()
@@ -68,7 +80,6 @@ public class DragonBoss : MonoBehaviour
             Debug.LogWarning("[DragonBoss] Chưa gán Hp Slider trong Inspector cho " + gameObject.name);
         }
 
-        // Tìm Player bằng Tag, chỉ cần tìm 1 lần vì Boss đứng yên không cần track liên tục bằng OverlapCircle mỗi frame
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
@@ -91,7 +102,50 @@ public class DragonBoss : MonoBehaviour
 
         if (distance <= attackRange && cooldownTimer <= 0f)
         {
+            FlipTowardsPlayer();
             StartAttack();
+        }
+    }
+
+    private void FlipTowardsPlayer()
+    {
+        if (player == null)
+            return;
+
+        bool isPlayerOnRight = player.position.x > transform.position.x;
+
+        // Logic lật cơ bản
+        bool shouldFaceRight = isPlayerOnRight;
+
+        // Áp dụng đảo ngược nếu animation bị ngược
+        if (invertFlip)
+        {
+            shouldFaceRight = !shouldFaceRight;
+        }
+
+        // Áp dụng hướng mặc định
+        if (!isFacingRight)
+        {
+            shouldFaceRight = !shouldFaceRight;
+        }
+
+        // Chỉ lật khi cần thay đổi
+        if (shouldFaceRight == currentFacingRight)
+            return;
+
+        currentFacingRight = shouldFaceRight;
+
+        // Lật Sprite
+        Vector3 newScale = transform.localScale;
+        newScale.x = shouldFaceRight ? Mathf.Abs(transform.localScale.x) : -Mathf.Abs(transform.localScale.x);
+        transform.localScale = newScale;
+
+        // Nếu có Animator riêng, lật luôn Animator
+        if (anim != null)
+        {
+            Vector3 animScale = anim.transform.localScale;
+            animScale.x = shouldFaceRight ? Mathf.Abs(animScale.x) : -Mathf.Abs(animScale.x);
+            anim.transform.localScale = animScale;
         }
     }
 
@@ -102,10 +156,7 @@ public class DragonBoss : MonoBehaviour
 
         anim.SetTrigger("Attack");
 
-        // Lửa rơi xuống đất và gây damage đúng vào thời điểm khớp với animation
         Invoke(nameof(DealFireDamage), fireDelay);
-
-        // Kết thúc trạng thái tấn công, cho phép tấn công lại sau khi animation xong
         Invoke(nameof(EndAttack), attackDuration);
     }
 
@@ -119,8 +170,6 @@ public class DragonBoss : MonoBehaviour
             damageRadius,
             playerLayer);
 
-        // Dùng HashSet để tránh trường hợp Player có nhiều Collider2D
-        // khiến bị trừ máu nhiều lần trong 1 lần lửa rơi (chỉ gây damage 1 LẦN DUY NHẤT)
         HashSet<GameObject> alreadyHit = new HashSet<GameObject>();
 
         foreach (Collider2D hit in hits)
@@ -185,22 +234,17 @@ public class DragonBoss : MonoBehaviour
         if (hpCanvas != null)
             hpCanvas.SetActive(false);
 
-        // Dừng Animator để sprite đứng yên tại khung hình cuối của animation Death,
-        // KHÔNG ẩn hay xóa GameObject -> xác Boss vẫn hiển thị trên màn hình.
         if (anim != null)
             anim.enabled = false;
     }
+
     private void HideAfterDeath()
     {
         if (hpCanvas != null)
             hpCanvas.SetActive(false);
-
-        // Boss trùm thường không respawn như quái thường, nên ẩn hẳn sau khi chết.
-        // Nếu bạn muốn Boss biến mất hoàn toàn khỏi Scene, đổi dòng dưới thành Destroy(gameObject);
         gameObject.SetActive(false);
     }
 
-    // Vẽ vùng phát hiện và vùng damage trong Scene view để dễ chỉnh thông số
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
