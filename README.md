@@ -27,7 +27,7 @@ Shadow Hunter is a pixel-art action RPG where players fight monsters and defeat 
 |------|--------|
 | W A S D | Move |
 | Space | Jump |
-| Key X | Attack |
+| X | Attack |
 | Esc | Pause |
 
 ---

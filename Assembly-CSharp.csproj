@@ -55,6 +55,7 @@
     <Compile Include="Assets\scripts\mob\boar_hp.cs" />
     <Compile Include="Assets\scripts\mob\bee.cs" />
     <Compile Include="Assets\scripts\player\PlayerHealth.cs" />
+    <Compile Include="Assets\scripts\mob\DragonBoss.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -146,22 +146,15 @@ public class Player : MonoBehaviour
         foreach (Collider2D enemy in hits)
         {
             bee bee = enemy.GetComponent<bee>();
-
-            if (bee != null)
-            {
-                bee.TakeDamage(attackDamage);
-                continue;
-            }
+            if (bee != null) { bee.TakeDamage(attackDamage); continue; }
 
             boar_hp boar = enemy.GetComponent<boar_hp>();
+            if (boar != null) { boar.TakeDamage(attackDamage); continue; }
 
-            if (boar != null)
-            {
-                boar.TakeDamage(attackDamage);
-            }
+            DragonBoss boss = enemy.GetComponent<DragonBoss>();
+            if (boss != null) { boss.TakeDamage(attackDamage); }
         }
     }
-
     private void FinishAttack()
     {
         isAttacking = false;
